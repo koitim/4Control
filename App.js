@@ -36,27 +36,27 @@ const LoginNavigator = createStackNavigator({
 });
 
 const RoomNavigator = createStackNavigator({
-  List: ListRooms,
-  Add: CreateRoom
+  ListRoom: ListRooms,
+  AddRoom: CreateRoom
 },
 {
-  initialRouteName: 'List',
+  initialRouteName: 'ListRoom',
 });
 
 const DeviceNavigator = createStackNavigator({
-  List: ListDevices,
-  Add: CreateDevice
+  ListDevice: ListDevices,
+  AddDevice: CreateDevice
 },
 {
-  initialRouteName: 'List',
+  initialRouteName: 'ListDevice',
 });
 
 const SceneNavigator = createStackNavigator({
-  List: ListScenes,
-  Add: CreateScene
+  ListScene: ListScenes,
+  AddScene: CreateScene
 },
 {
-  initialRouteName: 'List',
+  initialRouteName: 'ListScene',
 });
 
 const TabNavigator = createBottomTabNavigator({

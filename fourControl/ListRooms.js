@@ -38,12 +38,12 @@ export default class ListRooms extends Component {
         });
     }
 
-    openRoom = (room) => {
-        this.props.navigation.navigate('Devices', {name:room});
+    openRoom = (room) => { 
+        this.props.navigation.navigate('ListDevice', {name:room});
     }
 
     addRoom() {
-        this.props.navigation.navigate('Add')
+        this.props.navigation.navigate('AddRoom')
     }
 
     createButton(room) {
@@ -51,7 +51,7 @@ export default class ListRooms extends Component {
         //return <RoomButton text={room} onPress={(room) => {this.openRoom(room)}}/>
         //return <RoomButton text={room} key={'btn-' + room} onPress={this.openRoom.bind(this, room)}/>
         //return <RoomButton key={room} text={room} onPress={() => {this.props.navigation.navigate('Tab')}}/>
-        return <RoomButton key={room} text={room}/>
+        return (<RoomButton key={room} text={room}/>);
     }
 
     createButtons(rooms) {

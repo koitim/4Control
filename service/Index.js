@@ -6,7 +6,9 @@ import {
     existsRoom,
     createRoom,
     createDevice,
-    getRooms
+    getRooms,
+    fetcherDevices,
+    updateDevice
   } from '../service/Firebase';
   
   // Geral
@@ -31,11 +33,18 @@ import {
   export function fetcherRooms(callBack) {
     getRooms(callBack);
   }
+  export async function getDevices(room, callBack) {
+    await fetcherDevices(room, callBack);
+  }
   
   export function addRoom(nameRoom, callBack) {
     return createRoom(nameRoom, callBack);
   }
   
-  export function addDevice(nameRoom, nameDevice, typeDevice, callBack) {
-    createDevice(nameRoom, nameDevice, typeDevice, callBack);
+  export function addDevice(nameRoom, device, callBack) {
+    createDevice(nameRoom, device, callBack);
+  }
+
+  export async function setDevice(room, device) {
+    await updateDevice(room, device);
   }

@@ -34,19 +34,10 @@ export function createRoom(nameRoom, callback) {
     .child(idUsuario)
     .child(nameRoom)
     .set(nameRoom, callback);
-      /* .then(function() {
-        return true;
-      })
-      .catch(function(error) {
-        return false;
-      }); */
 }
 
-export function createDevice(nameRoom, nameDevice, typeDevice, callback) {
+export function createDevice(nameRoom, device, callback) {
   const idUsuario = firebase.auth().currentUser.uid;
-  console.log(nameRoom);
-  console.log(nameDevice);
-  console.log(typeDevice);
   firebase
     .database()
     .ref()
@@ -55,10 +46,23 @@ export function createDevice(nameRoom, nameDevice, typeDevice, callback) {
     .child(idUsuario)
     .child(nameRoom)
     .push()
-    .set({
-      name: nameDevice,
-      type: typeDevice
-    }, callback);
+    .set(device, callback);
+}
+
+export function createScene(nameRoom, nameScene, devices, callback) {
+  const idUsuario = firebase.auth().currentUser.uid;
+  console.log(nameRoom);
+  console.log(nameScene);
+  console.log(devices);
+  firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_SCENES)
+    .child(idUsuario)
+    .child(nameRoom)
+    .child(nameScene)
+    .set(devices, callback);
 }
 
 export function getRooms(callback) {
@@ -79,6 +83,71 @@ export function getRooms(callback) {
         }
         callback(rooms);
       });
+}
+
+export async function fetcherDevices(room, callback) {
+  const idUsuario = firebase.auth().currentUser.uid;
+  await firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_DEVICES)
+    .child(idUsuario)
+    .child(room)
+    .once('value')
+      .then( function(snapshot){
+        let devices = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(childSnapshot => {
+            const device = childSnapshot.val();
+            devices.push({
+              id:childSnapshot.key,
+              name:device.name,
+              type:device.type,
+              value:device.value
+            });
+          });
+        }
+        callback(devices);
+      });
+}
+
+export function getScenes(nameRoom) {
+  const idUsuario = firebase.auth().currentUser.uid;
+  firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_SCENES)
+    .child(idUsuario)
+    .child(nameRoom)
+    .once('value')
+      .then( function(snapshot){
+        let scenes = [];
+        if (snapshot.exists()) {
+          snapshot.forEach(childSnapshot => {
+            scenes.push(childSnapshot.val());
+          });
+        }
+        callback(scenes);
+      });
+}
+
+export async function updateDevice(nameRoom, device) {
+  const idUsuario = firebase.auth().currentUser.uid;
+  await firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_DEVICES)
+    .child(idUsuario)
+    .child(nameRoom)
+    .child(device.id)
+    .set({
+      name:device.name,
+      type:device.type,
+      value:device.value
+    });
 }
 
 export function existsRoom(nameRoom, callBackIfExists, callBackIfNotExists) {
@@ -114,6 +183,7 @@ function getDataAtualFormatada() {
 const BD = 'Control';
 const TB_ROOMS = 'ROOMS';
 const TB_DEVICES = 'DEVICES';
+const TB_SCENES = 'SCENES';
 
 const conexaoFirebase = {
   apiKey: "AIzaSyAhW7iIMFC4Uu2DN8RdbnedDZjz8ioilm8",

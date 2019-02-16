@@ -9,25 +9,38 @@ import {
 } from 'react-native'
 import RoomButton from '../components/RoomButton';
 import CustomButtom from '../components/CustomButton';
+import {
+    initializeServices,
+    getDevices,
+    setDevice
+} from '../service/Index';
+import CustomSwitch from '../components/CustomSwitch';
+import CustomSlider from '../components/CustomSlider';
+import {SLIDER_DEVICES, SWITCH_DEVICES} from './Constants';
 
 export default class ListDevices extends Component {
 
-    static navigationOptions = {
-        title: 'Dispositivos',
-    };
-
     constructor(props) {
         super(props);
-        const temproom = this.props.navigation.getParam('name');
-        console.log(temproom);
         this.state = {
             room:this.props.navigation.getParam('name'),
-            language:'',
+            devices:[]
         }
     }
 
-    componentWillMount() {
-        // Recuperar ambientes da base
+    async componentWillMount() {
+        initializeServices();
+        await this.recoverDevices();
+    }
+
+    async recoverDevices(){
+        getDevices(this.state.room, this.updateDevices.bind(this));
+    }
+
+    async updateDevices(devices){
+        this.setState({
+            devices: devices
+        });
     }
 
     openRoom(room) {
@@ -35,44 +48,68 @@ export default class ListDevices extends Component {
     }
 
     addDevice() {
-        this.props.navigation.navigate('Add', {nameRoom:this.state.room})
+        this.props.navigation.navigate('AddDevice', {nameRoom:this.state.room})
+    }
+
+    updateSwitch = (index) => {
+        const {room, devices} = this.state;
+        devices[index].value = !devices[index].value;
+        this.setState({devices:devices});
+        setDevice(room, devices[index]);
+    }
+
+    updateSlider = (newValue, index) => {
+        const {devices} = this.state;
+        devices[index].value = newValue;
+        this.setState({devices:devices});
+    }
+
+    createDevice(device, index) {
+        if (SWITCH_DEVICES.indexOf(device.type) != -1) {
+            return (
+                <CustomSwitch 
+                    label={device.name}
+                    value={this.state.devices[index].value}
+                    updateValue={this.updateSwitch.bind(this, index)}/>
+            );
+        }
+        if (SLIDER_DEVICES.indexOf(device.type) != -1) {    
+            const min = 0;
+            const max = 200;
+            return (
+                <CustomSlider 
+                    label={device.name} 
+                    minimo={min} 
+                    maximo={max}
+                    value={this.state.devices[index].value}
+                    updateValue={this.updateSlider.bind(this)} />
+            );
+        }
+        return null;
+    }
+
+    createDevices(devices) {
+        return devices.map(this.createDevice.bind(this));
     }
 
     render() {
-        const min = 0;
-        const max = 100;
-        const a = true;
         return (
             <View style={styles.container}>
-                <Picker
-                    selectedValue={this.state.language}
-                    style={{height: 50, width: 100}}
-                    onValueChange={(itemValue, itemIndex) =>
-                        this.setState({language: itemValue})
-                    }>
-                    <Picker.Item label="Java" value="java" />
-                    <Picker.Item label="JavaScript" value="js" />
-                </Picker>
-                <Slider
-                    style={{height: 50, width: 100}}
-                    minimumValue={min}
-                    maximumValue={max}
-                />
-                <Switch
-                    value={a}
-                />
-                <RoomButton text='Luz' />
+                {this.createDevices(this.state.devices)}
                 <CustomButtom text="Adicionar" onPress = {this.addDevice.bind(this)} />
             </View>
         );
     }
 }
 
+const devicesSwitch = ['']
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
+    marginLeft:20
   },
 });

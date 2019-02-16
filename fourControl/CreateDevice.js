@@ -25,8 +25,6 @@ export default class CreateDevice extends React.Component {
 
   constructor(props) {
     super(props);
-    const temp = this.props.navigation.getParam('nameRoom');
-    console.log(temp);
     this.state = {
       nameRoom: this.props.navigation.getParam('nameRoom'),
       nameDevice: '',
@@ -61,9 +59,12 @@ export default class CreateDevice extends React.Component {
             <Picker.Item label="Luz normal" value="1" />
             <Picker.Item label="Luz com Dimmer" value="2" />
             <Picker.Item label="Ar condicionado" value="3" />
-            <Picker.Item label="TV" value="4" />
-            <Picker.Item label="Cortina" value="5" />
-            <Picker.Item label="Som" value="6" />
+            <Picker.Item label="Temperatura do Ar condicionado" value="4" />
+            <Picker.Item label="TV" value="5" />
+            <Picker.Item label="Volume da TV" value="6" />
+            <Picker.Item label="Cortina" value="7" />
+            <Picker.Item label="Som" value="8" />
+            <Picker.Item label="Volume do Som" value="9" />
         </Picker>
         <CustomButton text="Adicionar" onPress = {this.add} />
         <CustomButton text="Cancelar" onPress = {this.goBack} />
@@ -79,7 +80,7 @@ export default class CreateDevice extends React.Component {
     if (error == null) {
       Alert.alert(
         'Resultado',
-        'Ambiente adicionado com sucesso!',
+        'Dispositivo adicionado com sucesso!',
         [{text: 'OK'}],
         {cancelable: false},
       );
@@ -87,7 +88,7 @@ export default class CreateDevice extends React.Component {
     } else {
       Alert.alert(
         'Resultado',
-        'Ocorreu um erro ao adicionar o ambiente: ' + error,
+        'Ocorreu um erro ao adicionar o dispositivo: ' + error,
         [{text: 'OK'}],
         {cancelable: false},
       );
@@ -104,7 +105,31 @@ export default class CreateDevice extends React.Component {
       containsErrors = true;
     }
     if (!containsErrors) {
-      addDevice(nameRoom, nameDevice, typeDevice, this.resultAdd.bind(this));
+      let defaultValue;
+      switch (typeDevice) {
+        case '1':
+        case '3':
+        case '5':
+        case '7':
+        case '8':
+          defaultValue = false;
+          break;
+        case '2':
+        case '4':
+        case '6':
+        case '9':
+          defaultValue = 0;
+          break;
+        default:
+          defaultValue = null;
+          break;
+      }
+      let device = {
+        name:nameDevice,
+        type:typeDevice,
+        value:defaultValue
+      }
+      addDevice(nameRoom, device, this.resultAdd.bind(this));
     }
   }
   
