@@ -8,8 +8,8 @@ export function initializeFirebase() {
   }
 }
 
-// Autenticação
 
+// Autenticação
 export function login(email, password) {
   return firebase.auth().signInWithEmailAndPassword(email, password);
 }
@@ -22,70 +22,54 @@ export function registerUser(email, password) {
   return firebase.auth().createUserWithEmailAndPassword(email, password);
 }
 
-// Banco de dados
 
-export function createRoom(nameRoom, callback) {
+// Banco de dados
+export async function fetchRooms(callBack) {
   const idUsuario = firebase.auth().currentUser.uid;
-  firebase
+  await firebase
     .database()
     .ref()
     .child(BD)
     .child(TB_ROOMS)
     .child(idUsuario)
-    .child(nameRoom)
-    .set(nameRoom, callback);
+    .on('child_added', (childSnapshot, prevChildKey) => {
+      callBack(childSnapshot.val());
+    });
 }
 
-export function createDevice(nameRoom, device, callback) {
+export async function detacheCallbackRooms() {
   const idUsuario = firebase.auth().currentUser.uid;
-  firebase
+  await firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_ROOMS)
+    .child(idUsuario)
+    .off();
+}
+
+export async function fetchDevices(room, callback) {
+  const idUsuario = firebase.auth().currentUser.uid;
+  await firebase
     .database()
     .ref()
     .child(BD)
     .child(TB_DEVICES)
     .child(idUsuario)
-    .child(nameRoom)
-    .push()
-    .set(device, callback);
-}
-
-export function createScene(nameRoom, nameScene, devices, callback) {
-  const idUsuario = firebase.auth().currentUser.uid;
-  console.log(nameRoom);
-  console.log(nameScene);
-  console.log(devices);
-  firebase
-    .database()
-    .ref()
-    .child(BD)
-    .child(TB_SCENES)
-    .child(idUsuario)
-    .child(nameRoom)
-    .child(nameScene)
-    .set(devices, callback);
-}
-
-export function getRooms(callback) {
-  const idUsuario = firebase.auth().currentUser.uid;
-  firebase
-    .database()
-    .ref()
-    .child(BD)
-    .child(TB_ROOMS)
-    .child(idUsuario)
-    .once('value')
-      .then( function(snapshot){
-        let rooms = [];
-        if (snapshot.exists()) {
-          snapshot.forEach(childSnapshot => {
-            rooms.push(childSnapshot.val());
-          });
-        }
-        callback(rooms);
+    .child(room)
+    .on('child_added', (childSnapshot, prevChildKey) => {
+      const device = childSnapshot.val();
+      callback({
+        id:childSnapshot.key,
+        name:device.name,
+        type:device.type,
+        value:device.value
       });
+    });
 }
 
-export async function fetcherDevices(room, callback) {
+export async function fetchAllDevices(room, callback) {
+  console.log('estou na rotina certa...')
   const idUsuario = firebase.auth().currentUser.uid;
   await firebase
     .database()
@@ -95,7 +79,7 @@ export async function fetcherDevices(room, callback) {
     .child(idUsuario)
     .child(room)
     .once('value')
-      .then( function(snapshot){
+      .then((snapshot) => {
         let devices = [];
         if (snapshot.exists()) {
           snapshot.forEach(childSnapshot => {
@@ -112,7 +96,19 @@ export async function fetcherDevices(room, callback) {
       });
 }
 
-export function getScenes(nameRoom) {
+export async function detacheCallbackDevices() {
+  const idUsuario = firebase.auth().currentUser.uid;
+  await firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_DEVICES)
+    .child(idUsuario)
+    .child(room)
+    .off();
+}
+
+export function fetchScenes(room, callBack) {
   const idUsuario = firebase.auth().currentUser.uid;
   firebase
     .database()
@@ -120,16 +116,86 @@ export function getScenes(nameRoom) {
     .child(BD)
     .child(TB_SCENES)
     .child(idUsuario)
+    .child(room)
+    .on('child_added', (childSnapshot, prevChildKey) => {
+      callBack({
+        name:childSnapshot.key,
+        active:childSnapshot.val().active,
+        devices:childSnapshot.val().devices
+      });
+    });
+}
+
+export async function detacheCallbackScenes() {
+  const idUsuario = firebase.auth().currentUser.uid;
+  await firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_SCENES)
+    .child(idUsuario)
+    .child(room)
+    .off();
+}
+
+export async function createRoom(nameRoom, callback) {
+  const idUsuario = firebase.auth().currentUser.uid;
+  await firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_ROOMS)
+    .child(idUsuario)
     .child(nameRoom)
     .once('value')
-      .then( function(snapshot){
-        let scenes = [];
+      .then( function(snapshot) {
+        if (snapshot.exists()) {
+          callback('Ambiente já cadastrado.');
+        } else {
+          firebase
+            .database()
+            .ref()
+            .child(BD)
+            .child(TB_ROOMS)
+            .child(idUsuario)
+            .child(nameRoom)
+            .set(nameRoom, callback);
+        }
+      });
+}
+
+export async function createDevice(nameRoom, device, callback) {
+  const idUsuario = firebase.auth().currentUser.uid;
+  await firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_DEVICES)
+    .child(idUsuario)
+    .child(nameRoom)
+    .once('value')
+      .then( function(snapshot) {
+        let foundDevice = false;
         if (snapshot.exists()) {
           snapshot.forEach(childSnapshot => {
-            scenes.push(childSnapshot.val());
+            const deviceFirebase = childSnapshot.val();
+            if (deviceFirebase.name == device.name) {
+              foundDevice = true;
+              callback('Dispositivo já cadastrado.');
+            }
           });
         }
-        callback(scenes);
+        if (!foundDevice) {
+          firebase
+            .database()
+            .ref()
+            .child(BD)
+            .child(TB_DEVICES)
+            .child(idUsuario)
+            .child(nameRoom)
+            .push()
+            .set(device, callback);
+        }
       });
 }
 
@@ -150,34 +216,78 @@ export async function updateDevice(nameRoom, device) {
     });
 }
 
-export function existsRoom(nameRoom, callBackIfExists, callBackIfNotExists) {
+export async function createScene(room, nameScene, devices, callback) {
   const idUsuario = firebase.auth().currentUser.uid;
-  firebase
+  await firebase
     .database()
     .ref()
     .child(BD)
+    .child(TB_SCENES)
     .child(idUsuario)
-    .child(TB_ROOMS)
-    .child(nameRoom)
-    .once('value')
+    .child(room)
+    .child(nameScene)
+    .once('value') 
       .then( function(snapshot) {
         if (snapshot.exists()) {
-          callBackIfExists();
+          callback('Cena já cadastrada.');
         } else {
-          callBackIfNotExists();
+          firebase
+            .database()
+            .ref()
+            .child(BD)
+            .child(TB_SCENES)
+            .child(idUsuario)
+            .child(room)
+            .child(nameScene)
+            .set({active:false,devices}, callback);
         }
       });
 }
 
-
-function getDataAtualFormatada() {
-  const data = new Date();
-  const dia  = data.getDate().toString()
-  const diaF = (dia.length == 1) ? '0' + dia : dia
-  const mes  = (data.getMonth() + 1).toString()
-  const mesF = (mes.length == 1) ? '0' + mes : mes
-  const anoF = data.getFullYear();
-  return diaF + "/" + mesF + "/" + anoF;
+export async function updateScene(room, currentActiveScene, newActiveScene) {
+  const idUsuario = firebase.auth().currentUser.uid;
+  let refScene = await firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_SCENES)
+    .child(idUsuario)
+    .child(room);
+  if (currentActiveScene != null) {
+    refScene
+      .child(currentActiveScene.name)
+      .set({
+        active:currentActiveScene.active,
+        devices:currentActiveScene.devices
+      });
+  }
+  refScene
+    .child(newActiveScene.name)
+    .set({
+      active:newActiveScene.active,
+      devices:newActiveScene.devices
+    });
+  let refDevice = await firebase
+    .database()
+    .ref()
+    .child(BD)
+    .child(TB_DEVICES)
+    .child(idUsuario)
+    .child(room);
+  newActiveScene.devices.forEach(device => {
+    refDevice
+      .child(device.id)
+      .once('value')
+      .then( function(snapshot) {
+        if (snapshot.exists()) {
+          let deviceBD = snapshot.val();
+          deviceBD.value = device.value;
+          refDevice
+            .child(device.id)
+            .set(deviceBD);
+        }
+      });
+  });  
 }
 
 const BD = 'Control';

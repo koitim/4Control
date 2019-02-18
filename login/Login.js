@@ -1,8 +1,7 @@
 import React            from 'react';
-import {View}           from 'react-native';
+import {View, Text}           from 'react-native';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
-//import LogoMarvel       from '../components/LogoMarvel';
 import {styles}         from '../components/Styles';
 import {
   initializeServices,
@@ -14,9 +13,9 @@ import {
 } from './Functions';
 
 export default class Login extends React.Component {
-  
+
   static navigationOptions = {
-    title: 'Login',
+      title: 'Login',
   };
 
   constructor() {
@@ -98,7 +97,7 @@ export default class Login extends React.Component {
             onChange={password => this.setState({password})}
             password={true}
           />
-          <CustomButton text="Logar" onPress = {this.login.bind(this)} />
+          <CustomButton text="Entrar" onPress = {this.login.bind(this)} />
           <CustomButton text="Cadastrar" onPress = {this.toRegister.bind(this)} />
       </View>
     );

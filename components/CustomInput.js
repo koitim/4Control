@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'flex-start',
         alignSelf: 'stretch',
-        backgroundColor: '#333'
+        backgroundColor: '#fff'
     },
     errorText: {
         color: '#F00',

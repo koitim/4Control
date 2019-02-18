@@ -7,14 +7,21 @@ export const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#333',
+        backgroundColor: '#fff',
+        padding: 10
+    },
+    containerDevices: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        backgroundColor: '#fff',
         padding: 10
     },
     input: {
         height: 45,
         backgroundColor: '#FFF',
         alignSelf: 'stretch',
-        borderColor: '#EEE',
+        borderColor: '#000',
         borderWidth: 1,
         marginBottom: 10
     },
@@ -33,11 +40,20 @@ export const styles = StyleSheet.create({
         marginTop: 20
     },
     comboBox: {
-        backgroundColor: '#333',
+        backgroundColor:'#fff',
+        borderColor:'#000',
+        borderWidth:2,
+        backgroundColor:'#eee',
         justifyContent: 'space-evenly',
-        color: '#FFF',
+        color: '#000',
         alignSelf: 'stretch',
         marginBottom: 20,
         height: 50
-    }
+    },
+    title: {
+        color:'#00f',
+        fontSize:50,
+        fontWeight:'bold',
+        marginBottom:50
+      }
 });

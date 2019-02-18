@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import {
-    StyleSheet,
     View,
     Text
 } from 'react-native'
 import RoomButton from '../components/RoomButton';
+import {styles} from '../components/Styles';
 
 export default class OpenRoom extends Component {
 
@@ -12,31 +12,28 @@ export default class OpenRoom extends Component {
         title: 'Ambientes',
     };
 
-    componentWillMount() {
-        // Recuperar ambientes da base
+    constructor(props) {
+        super(props);
+        this.state = {
+            room:this.props.navigation.getParam('nameRoom')
+        }
     }
 
-    openRoom(room) {
+    listDevices() {
+        this.props.navigation.navigate('ListDevice', {nameRoom:this.state.room});
+    }
 
+    listScenes() {
+        this.props.navigation.navigate('ListScene', {nameRoom:this.state.room});
     }
 
     render() {
         return (
             <View style={styles.container}>
-                <RoomButton text='Suíte' onPress={this.openRoom.bind(this, 1)} />
-                <RoomButton text='Quarto' />
-                <RoomButton text='Gabinete' />
-                <RoomButton text='Sala' />
+                <Text style={styles.title}>{this.state.room}</Text>
+                <RoomButton text='Dispositivos' onPress={this.listDevices.bind(this)} />
+                <RoomButton text='Cenas' onPress={this.listScenes.bind(this)} />
             </View>
         );
     }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

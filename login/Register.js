@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  View
-} from 'react-native';
+import {View} from 'react-native';
 import {
     validateEmail,
     validatePassword,
@@ -9,7 +7,6 @@ import {
 } from './Functions';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
-//import LogoMarvel       from '../componentes/LogoMarvel';
 import {
     initializeServices,
     createUser

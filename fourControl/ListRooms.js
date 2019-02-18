@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import {
-    StyleSheet,
-    View,
-    Text,
-    TouchableOpacity
+    View
 } from 'react-native';
 import RoomButton from '../components/RoomButton';
 import CustomButtom from '../components/CustomButton';
 import {
     initializeServices,
-    fetcherRooms
+    requestRooms,
+    releaseRooms,
+    leave
 } from '../service/Index';
+import {styles} from '../components/Styles';
 
 export default class ListRooms extends Component {
 
@@ -20,63 +20,57 @@ export default class ListRooms extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {rooms:[]};
+        this.state = {
+            rooms:[]
+        };
     }
 
     async componentWillMount() {
         initializeServices();
-        await this.recoverRooms();
+        await requestRooms(this.reloadRooms.bind(this));
     }
 
-    async recoverRooms(){
-        fetcherRooms(this.updateRooms.bind(this));
+    async componentWillUMount() {
+        console.log('saindo rooms');
+        await releaseRooms();
     }
 
-    async updateRooms(rooms){
+    reloadRooms(room){
+        let {rooms} = this.state;
+        rooms.push(room);
         this.setState({
             rooms: rooms
         });
     }
 
     openRoom = (room) => { 
-        this.props.navigation.navigate('ListDevice', {name:room});
+        this.props.navigation.navigate('OpenRoom', {nameRoom:room});
     }
 
     addRoom() {
         this.props.navigation.navigate('AddRoom')
     }
 
+    async exit() {
+        await leave();
+        this.props.navigation.navigate('Login');
+    }
+
     createButton(room) {
-        //return <RoomButton text={room} onPress={this.openRoom(room)}/>
-        //return <RoomButton text={room} onPress={(room) => {this.openRoom(room)}}/>
-        //return <RoomButton text={room} key={'btn-' + room} onPress={this.openRoom.bind(this, room)}/>
-        //return <RoomButton key={room} text={room} onPress={() => {this.props.navigation.navigate('Tab')}}/>
-        return (<RoomButton key={room} text={room}/>);
+        return <RoomButton text={room} key={room} onPress={this.openRoom.bind(this, room)}/>
     }
 
     createButtons(rooms) {
-        //rooms.map()
-        return rooms.map(this.createButton);
+        return rooms.map(this.createButton.bind(this));
     }
 
     render() {
         return (
             <View style={styles.container}>
-                <RoomButton text='Gabinete' onPress={this.openRoom.bind(this, 'Gabinete')}/>
-                <RoomButton text='Sala' onPress={this.openRoom.bind(this, 'Sala')}/>
-                <RoomButton text='Suíte' onPress={this.openRoom.bind(this, 'Suíte')}/>
-                <RoomButton text='Quarto' onPress={this.openRoom.bind(this, 'Quarto')}/>
+                {this.createButtons(this.state.rooms)}
                 <CustomButtom text="Adicionar" onPress = {this.addRoom.bind(this)} />
+                <CustomButtom text="Sair" onPress = {this.exit.bind(this)} />
             </View>
         );
     }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

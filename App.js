@@ -2,7 +2,6 @@ import React from 'react';
 import {
   createStackNavigator,
   createAppContainer,
-  createBottomTabNavigator,
   createSwitchNavigator
 } from "react-navigation";
 import ListRooms from './fourControl/ListRooms';
@@ -13,14 +12,12 @@ import Login from './login/Login';
 import Register from './login/Register';
 import CreateDevice from './fourControl/CreateDevice';
 import CreateScene from './fourControl/CreateScene';
+import OpenRoom from './fourControl/OpenRoom'
 
 export default class App extends React.Component {
 
-  static navigationOptions = {
-      title: '4Control',
-  };
-
   render() {
+    console.disableYellowBox = true;
     return (
       <AppContainer/>
     );
@@ -35,44 +32,17 @@ const LoginNavigator = createStackNavigator({
   initialRouteName: 'Login',
 });
 
-const RoomNavigator = createStackNavigator({
+const AppNavigator = createStackNavigator({
   ListRoom: ListRooms,
-  AddRoom: CreateRoom
+  AddRoom: CreateRoom,
+  OpenRoom: OpenRoom,
+  ListDevice: ListDevices,
+  AddDevice: CreateDevice,
+  ListScene: ListScenes,
+  AddScene: CreateScene,
 },
 {
   initialRouteName: 'ListRoom',
-});
-
-const DeviceNavigator = createStackNavigator({
-  ListDevice: ListDevices,
-  AddDevice: CreateDevice
-},
-{
-  initialRouteName: 'ListDevice',
-});
-
-const SceneNavigator = createStackNavigator({
-  ListScene: ListScenes,
-  AddScene: CreateScene
-},
-{
-  initialRouteName: 'ListScene',
-});
-
-const TabNavigator = createBottomTabNavigator({
-  Devices: DeviceNavigator,
-  Scenes: SceneNavigator
-},
-{
-  initialRouteName: 'Devices',
-});
-
-const AppNavigator = createStackNavigator({
-  Rooms: RoomNavigator,
-  Tab: TabNavigator
-},
-{
-  initialRouteName: 'Rooms',
 });
 
 const AppContainer = createAppContainer(createSwitchNavigator(
@@ -84,4 +54,3 @@ const AppContainer = createAppContainer(createSwitchNavigator(
     initialRouteName: 'Login',
   }
 ));
-//const AppContainer = createAppContainer(TabNavigator);

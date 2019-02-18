@@ -7,10 +7,8 @@ import {
 } from 'react-native';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
-//import LogoMarvel       from '../componentes/LogoMarvel';
 import {
     initializeServices,
-    createUser,
     addDevice
 } from '../service/Index';
 import {styles} from '../components/Styles';
@@ -26,7 +24,7 @@ export default class CreateDevice extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      nameRoom: this.props.navigation.getParam('nameRoom'),
+      room: this.props.navigation.getParam('nameRoom'),
       nameDevice: '',
       nameDeviceInputStyle: styles.input,
       nameDeviceErrorMessage: '',
@@ -41,6 +39,7 @@ export default class CreateDevice extends React.Component {
   render() {
     return (
       <View style={styles.container}>
+        <Text style={styles.title}>{this.state.room}</Text>
         <CustomInput
           errorMessage={this.state.nameDeviceErrorMessage}
           style={this.state.nameDeviceInputStyle}
@@ -66,7 +65,7 @@ export default class CreateDevice extends React.Component {
             <Picker.Item label="Som" value="8" />
             <Picker.Item label="Volume do Som" value="9" />
         </Picker>
-        <CustomButton text="Adicionar" onPress = {this.add} />
+        <CustomButton text="Gravar" onPress = {this.add} />
         <CustomButton text="Cancelar" onPress = {this.goBack} />
       </View>
     );
@@ -84,10 +83,10 @@ export default class CreateDevice extends React.Component {
         [{text: 'OK'}],
         {cancelable: false},
       );
-      this.props.navigation.goBack();
+      this.goBack();
     } else {
       Alert.alert(
-        'Resultado',
+        'Erro',
         'Ocorreu um erro ao adicionar o dispositivo: ' + error,
         [{text: 'OK'}],
         {cancelable: false},
@@ -96,7 +95,7 @@ export default class CreateDevice extends React.Component {
   }
 
   add = async () => {
-    const {nameRoom, nameDevice, typeDevice} = this.state;
+    const {room, nameDevice, typeDevice} = this.state;
     let containsErrors = false;
     if (this.validateNameDevice(nameDevice)) {
       this.updateNameDevice(styles.input, '');
@@ -129,7 +128,7 @@ export default class CreateDevice extends React.Component {
         type:typeDevice,
         value:defaultValue
       }
-      addDevice(nameRoom, device, this.resultAdd.bind(this));
+      await addDevice(room, device, this.resultAdd.bind(this));
     }
   }
   

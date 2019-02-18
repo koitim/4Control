@@ -5,14 +5,11 @@ import {
 } from 'react-native';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
-//import LogoMarvel       from '../componentes/LogoMarvel';
 import {
     initializeServices,
-    createUser,
     addRoom
 } from '../service/Index';
 import {styles} from '../components/Styles';
-
 
 
 export default class CreateRoom extends React.Component {
@@ -23,7 +20,11 @@ export default class CreateRoom extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = initialData;
+    this.state = {
+      nameRoom: '',
+      nameRoomInputStyle: styles.input,
+      nameRoomErrorMessage: ''
+    };
   }
 
   componentWillMount() {
@@ -41,7 +42,7 @@ export default class CreateRoom extends React.Component {
           onChange={nameRoom => this.setState({nameRoom})}
           password={false}
         />
-        <CustomButton text="Adicionar" onPress = {this.add} />
+        <CustomButton text="Gravar" onPress = {this.add} />
         <CustomButton text="Cancelar" onPress = {this.goBack} />
       </View>
     );
@@ -51,7 +52,7 @@ export default class CreateRoom extends React.Component {
     this.props.navigation.goBack();
   }
 
-  resultAdd(error) {
+  resultAdd = (error) => {
     if (error == null) {
       Alert.alert(
         'Resultado',
@@ -62,7 +63,7 @@ export default class CreateRoom extends React.Component {
       this.props.navigation.goBack();
     } else {
       Alert.alert(
-        'Resultado',
+        'Erro',
         'Ocorreu um erro ao adicionar o ambiente: ' + error,
         [{text: 'OK'}],
         {cancelable: false},
@@ -80,7 +81,7 @@ export default class CreateRoom extends React.Component {
       containsErrors = true;
     }
     if (!containsErrors) {
-      addRoom(nameRoom, this.resultAdd.bind(this));
+      await addRoom(nameRoom, this.resultAdd.bind(this));
     }
   }
   
@@ -95,9 +96,3 @@ export default class CreateRoom extends React.Component {
     });
   }
 }
-
-const initialData = {
-    nameRoom: '',
-    nameRoomInputStyle: styles.input,
-    nameRoomErrorMessage: ''
-};

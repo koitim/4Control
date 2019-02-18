@@ -2,24 +2,28 @@ import React from 'react';
 import {
   View,
   Alert,
-  Picker,
   Text
 } from 'react-native';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
-//import LogoMarvel       from '../componentes/LogoMarvel';
 import {
     initializeServices,
-    createUser,
-    addDevice,
-    getDevices
+    addScene,
+    requestDevices,
+    requestAllDevices
 } from '../service/Index';
+import CustomSwitch from '../components/CustomSwitch';
+import CustomSlider from '../components/CustomSlider';
 import {styles} from '../components/Styles';
-import { SWITCH_DEVICES } from './Constants';
+import { SWITCH_DEVICES, SLIDER_DEVICES } from './Constants';
 
 
 
 export default class CreateScene extends React.Component {
+  
+  static navigationOptions = {
+    title: 'Cadastro de cena',
+  };
 
   constructor(props) {
     super(props);
@@ -28,24 +32,17 @@ export default class CreateScene extends React.Component {
       nameScene: '',
       nameSceneInputStyle: styles.input,
       nameSceneErrorMessage: '',
-      typeDevice: '1',
       devices:[]
     };
   }
 
   async componentWillMount() {
     initializeServices();
-    await this.recoverDevices();
+    await requestAllDevices(this.state.room, this.loadDevices.bind(this));
   }
 
-  async recoverDevices(){
-      console.log('indo recuperar dispositivos do ambiente ' + this.state.room);
-      await getDevices(this.state.room, this.updateDevices.bind(this));
-  }
-
-  updateDevices(devices){
-    console.log('antes: ' + devices);
-
+  async loadDevices(devices){
+    console.log(devices);
     devices.forEach(device => {
       if (SWITCH_DEVICES.indexOf(device.type) != -1) {
         device.value = false;
@@ -53,10 +50,21 @@ export default class CreateScene extends React.Component {
         device.value = 0
       }
     });
-    console.log('depois: ' + devices);
-      this.setState({
-          devices: deviçpces
-      });
+    this.setState({
+        devices: devices
+    });
+  }
+
+  updateSwitch = async (index) => {
+      const {devices} = this.state;
+      devices[index].value = !devices[index].value;
+      this.setState({devices:devices});
+  }
+
+  updateSlider = (index, newValue) => {
+      const {devices} = this.state;
+      devices[index].value = newValue;
+      this.setState({devices:devices});
   }
 
   createDevice(device, index) {
@@ -90,6 +98,7 @@ export default class CreateScene extends React.Component {
   render() {
     return (
       <View style={styles.container}>
+        <Text style={styles.title}>{this.state.room}</Text>
         <CustomInput
           errorMessage={this.state.nameSceneErrorMessage}
           style={this.state.nameSceneInputStyle}
@@ -98,8 +107,10 @@ export default class CreateScene extends React.Component {
           onChange={nameScene => this.setState({nameScene})}
           password={false}
         />
-        {this.createDevices(this.state.devices)}
-        <CustomButton text="Adicionar" onPress = {this.add} />
+        <View style={styles.containerDevices}>
+          {this.createDevices(this.state.devices)}
+        </View>
+        <CustomButton text="Gravar" onPress = {this.add} />
         <CustomButton text="Cancelar" onPress = {this.goBack} />
       </View>
     );
@@ -113,15 +124,15 @@ export default class CreateScene extends React.Component {
     if (error == null) {
       Alert.alert(
         'Resultado',
-        'Dispositivo adicionado com sucesso!',
+        'Cena adicionada com sucesso!',
         [{text: 'OK'}],
         {cancelable: false},
       );
       this.props.navigation.goBack();
     } else {
       Alert.alert(
-        'Resultado',
-        'Ocorreu um erro ao adicionar o dispositivo: ' + error,
+        'Erro',
+        'Ocorreu um erro ao adicionar a cena: ' + error,
         [{text: 'OK'}],
         {cancelable: false},
       );
@@ -129,51 +140,34 @@ export default class CreateScene extends React.Component {
   }
 
   add = async () => {
-    const {room, nameScene, typeDevice} = this.state;
+    const {room, nameScene, devices} = this.state;
     let containsErrors = false;
-    if (this.validateNameDevice(nameScene)) {
-      this.updateNameDevice(styles.input, '');
+    if (this.validateNameScene(nameScene)) {
+      this.updateNameScene(styles.input, '');
     } else {
-      this.updateNameDevice(styles.inputError, 'Nome do dispositivo é obrigatório.');
+      this.updateNameScene(styles.inputError, 'Nome da cena é obrigatório.');
       containsErrors = true;
     }
     if (!containsErrors) {
-      let defaultValue;
-      switch (typeDevice) {
-        case '1':
-        case '3':
-        case '5':
-        case '7':
-        case '8':
-          defaultValue = false;
-          break;
-        case '2':
-        case '4':
-        case '6':
-        case '9':
-          defaultValue = 0;
-          break;
-        default:
-          defaultValue = null;
-          break;
-      }
-      let device = {
-        name:nameScene,
-        type:typeDevice,
-        value:defaultValue
-      }
-      addDevice(room, device, this.resultAdd.bind(this));
+      let devicesScene = [];
+      devices.forEach(device => {
+        devicesScene.push({
+          id:device.id,
+          value:device.value
+        });
+      });
+      addScene(room, nameScene, devicesScene, this.resultAdd.bind(this));
     }
   }
   
-  validateNameDevice(nameDevice) {
-    return !(nameDevice == null || nameDevice.trim() == "");
+  validateNameScene(nameScene) {
+    return !(nameScene == null || nameScene.trim() == "");
   }
 
-  updateNameDevice = (style, errorMessage) => {
+  updateNameScene = (style, errorMessage) => {
     this.setState({
-      nameDeviceInputStyle: style,
-      nameDeviceErrorMessage: errorMessage
+      nameSceneInputStyle: style,
+      nameSceneErrorMessage: errorMessage
     });
   }
 }
